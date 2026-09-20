@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>it.unicam.cs.asdl2526.slides.javaeoop</groupId>
+    <groupId>it.unicam.cs.asdl.slides.javaeoop</groupId>
     <artifactId>javaeoop</artifactId>
     <version>1.0-SNAPSHOT</version>
 
