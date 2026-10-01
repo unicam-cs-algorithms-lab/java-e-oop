@@ -2,7 +2,9 @@
 
 Questo progetto accompagna le slide **Java e Object-Oriented Programming: richiami e concetti di base** del modulo di Laboratorio di Algoritmi e Strutture Dati.
 
-L'esempio sviluppa una piccola applicazione per rappresentare e risolvere equazioni di secondo grado con soluzioni reali. Il codice non serve soltanto a mostrare la formula risolutiva: mette in evidenza come organizzare un programma Java secondo i principi della programmazione orientata agli oggetti.
+L'esempio principale sviluppa una piccola applicazione per rappresentare e risolvere equazioni di secondo grado con soluzioni reali. Il codice non serve soltanto a mostrare la formula risolutiva: mette in evidenza come organizzare un programma Java secondo i principi della programmazione orientata agli oggetti.
+
+Alcune classi aggiuntive riprendono lo stesso dominio delle equazioni di secondo grado per approfondire il problema della condivisione di riferimenti a oggetti mutabili e introdurre il concetto di **copia difensiva**.
 
 ## Obiettivi didattici
 
@@ -16,15 +18,17 @@ Nel progetto si possono riconoscere i concetti introdotti nelle slide:
 - documentazione delle API con Javadoc;
 - test manuali e test automatici con JUnit 5;
 - riferimenti a oggetti, stack delle attivazioni e heap;
+- condivisione di riferimenti a oggetti mutabili e copie difensive;
+- uso di `clone` per creare copie di oggetti quando il tipo lo supporta;
 - uguaglianza logica mediante `equals` e `hashCode`;
 - ordinamento naturale mediante `Comparable` e `compareTo`;
 - rappresentazione testuale degli oggetti mediante `toString`.
 
-Questi concetti preparano all'uso corretto delle interfacce e delle classi del Java Collections Framework, che si basano sui contratti di uguaglianza, hashing e ordinamento degli oggetti.
+Questi concetti preparano all'uso corretto delle interfacce e delle classi del Java Collections Framework, che si basano anche sui contratti di uguaglianza, hashing e ordinamento degli oggetti.
 
 ## Struttura del progetto
 
-Il package `it.unicam.cs.asdl2526.slides.javaeoop` contiene due gruppi di classi.
+Il package `it.unicam.cs.asdl.slides.javaeoop` contiene le classi della logica applicativa, alcuni front-end e alcuni esempi dedicati ai concetti discussi nelle slide.
 
 ### Logica applicativa
 
@@ -35,12 +39,54 @@ Il package `it.unicam.cs.asdl2526.slides.javaeoop` contiene due gruppi di classi
 
 Le classi della logica applicativa non leggono dati dall'utente e non stampano risultati. Ricevono gli input attraverso costruttori o parametri, restituiscono oggetti e segnalano gli usi non validi mediante eccezioni.
 
+### Copie difensive
+
+Le classi `Coefficienti` ed `EquazioneSecondoGradoConCoefficienti` costituiscono un esempio separato, sempre basato sul dominio delle equazioni di secondo grado, utilizzato per mostrare un problema che si presenta quando lo stato di un oggetto contiene riferimenti ad altri oggetti mutabili.
+
+- `Coefficienti` rappresenta i tre coefficienti `a`, `b` e `c` mediante un oggetto mutabile.
+- `EquazioneSecondoGradoConCoefficienti` memorizza nel proprio stato un oggetto `Coefficienti`, ma protegge il proprio stato mediante **copie difensive**.
+
+Se un costruttore memorizzasse direttamente il riferimento ricevuto:
+
+```java
+this.coefficienti = coefficienti;
+```
+
+il chiamante conserverebbe un riferimento allo stesso oggetto e potrebbe quindi modificare indirettamente lo stato interno dell'equazione.
+
+Per evitare questa condivisione, il costruttore crea una copia:
+
+```java
+this.coefficienti = coefficienti.clone();
+```
+
+Lo stesso problema si presenta nella direzione opposta. Un getter che restituisse direttamente:
+
+```java
+return this.coefficienti;
+```
+
+renderebbe accessibile dall'esterno l'oggetto mutabile che costituisce lo stato interno dell'equazione. Anche il getter restituisce quindi una copia:
+
+```java
+return this.coefficienti.clone();
+```
+
+In questo modo l'oggetto ricevuto dal costruttore, quello memorizzato internamente e quelli restituiti dai getter possono contenere gli stessi valori, ma sono **oggetti distinti nell'heap**.
+
+La classe `TestCopieDifensive` contiene un metodo `main` che permette di osservare direttamente questo comportamento: modificare l'oggetto `Coefficienti` originale oppure un oggetto restituito dal getter non modifica i coefficienti memorizzati nell'equazione.
+
+La classe `EquazioneSecondoGradoConCoefficientiTest`, nella cartella `src/test`, verifica lo stesso comportamento mediante test JUnit 5, mostrando anche l'uso di `assertNotSame` per distinguere l'uguaglianza dei dati dall'identità degli oggetti.
+
+L'esempio introduce `clone` soltanto come meccanismo utilizzato da `Coefficienti` per produrre una nuova istanza contenente gli stessi valori. Il punto centrale dell'esempio non è il meccanismo generale di clonazione degli oggetti Java, ma il principio secondo cui la condivisione di riferimenti a oggetti mutabili può compromettere l'incapsulamento e può quindi rendere necessarie copie difensive.
+
 ### Front-end e test
 
 - `EquazioniTextualFrontEnd` gestisce l'interazione tramite input e output testuale.
 - `EquazioniGUIFrontEnd` offre una semplice interfaccia grafica Swing e usa la stessa logica applicativa del front-end testuale.
 - `EquazioniTestAMano` mostra un controllo eseguito da un metodo `main`, con esito comunicato sullo standard output.
-- `EquazioneSecondoGradoTest` e `RisolutoreEquazioniSecondoGradoTest`, nella cartella `src/test`, mostrano test automatici con JUnit 5.
+- `TestCopieDifensive` permette di osservare tramite un metodo `main` il comportamento delle copie difensive.
+- `EquazioneSecondoGradoTest`, `RisolutoreEquazioniSecondoGradoTest` ed `EquazioneSecondoGradoConCoefficientiTest`, nella cartella `src/test`, mostrano test automatici con JUnit 5.
 
 La presenza di due front-end rende visibile la separazione tra presentazione e logica applicativa: l'interazione con l'utente può cambiare senza modificare le classi che rappresentano e risolvono le equazioni.
 
@@ -50,15 +96,41 @@ Le variabili dichiarate dentro un metodo sono variabili locali e appartengono al
 
 Per esempio, in un front-end la variabile locale `eq` contiene il riferimento a un oggetto `EquazioneSecondoGrado`. Quando `eq` viene passato a `solve`, il metodo riceve una copia dello stesso riferimento: non viene creata automaticamente una copia dell'equazione.
 
-I coefficienti di `EquazioneSecondoGrado` sono `private` e `final`; tutti i campi di `SoluzioneEquazioneSecondoGrado` sono `final` e nessuno fa parte dell'API pubblica. Dopo il costruttore lo stato non cambia; i metodi pubblici consentono di osservarlo senza renderlo modificabile.
+Analogamente, un'assegnazione come:
+
+```java
+Coefficienti c2 = c1;
+```
+
+non crea un secondo oggetto `Coefficienti`: `c1` e `c2` contengono due copie dello stesso riferimento e indicano quindi lo stesso oggetto nell'heap. Una modifica effettuata attraverso uno dei due riferimenti è osservabile anche attraverso l'altro.
+
+Questa proprietà è particolarmente importante per l'incapsulamento. Dichiarare un campo `private` impedisce di accedere direttamente alla variabile istanza, ma può non essere sufficiente se attraverso costruttori o getter vengono condivisi riferimenti agli oggetti mutabili che costituiscono lo stato interno.
+
+Le copie difensive mostrate da `EquazioneSecondoGradoConCoefficienti` impediscono questa condivisione.
+
+I coefficienti della classe originale `EquazioneSecondoGrado` sono invece valori primitivi `double`, dichiarati `private` e `final`; tutti i campi di `SoluzioneEquazioneSecondoGrado` sono `final` e nessuno fa parte dell'API pubblica. Dopo il costruttore lo stato non cambia e i metodi pubblici consentono di osservarlo senza renderlo modificabile.
 
 ## Uguaglianza, hashing e ordinamento
 
-`EquazioneSecondoGrado.equals` definisce l'uguaglianza logica in base ai tre coefficienti. `hashCode` usa gli stessi dati, come richiede il contratto generale: oggetti uguali devono produrre lo stesso codice hash. Questo requisito diventa essenziale quando gli oggetti vengono inseriti in collezioni basate su hashing, come `HashSet` e `HashMap`.
+`EquazioneSecondoGrado.equals` definisce l'uguaglianza logica in base ai tre coefficienti. `hashCode` usa gli stessi dati, come richiede il contratto generale: oggetti uguali devono produrre lo stesso codice hash. Oggetti diversi possono invece produrre lo stesso codice hash.
+
+Questo requisito diventa essenziale quando gli oggetti vengono inseriti in collezioni basate su hashing, come `HashSet` e `HashMap`.
 
 L'ordinamento naturale confronta prima `a`, poi `b` e infine `c`. Il valore restituito da `compareTo` indica soltanto se l'oggetto corrente precede, coincide o segue l'altro oggetto: non deve essere interpretato come una distanza.
 
-Nell'esempio si assume che i coefficienti siano numeri finiti e che per `b` e `c` non si distinguano `0.0` e `-0.0`. Con valori `NaN`, infiniti o zeri con segno diverso, l'implementazione didattica di `compareTo` non garantisce la piena compatibilità con `equals`. Questa precondizione è importante quando si usano collezioni ordinate come `TreeSet` e `TreeMap`.
+Il confronto dei coefficienti usa `Double.compare`. In questo modo l'ordinamento rimane coerente con il criterio di uguaglianza adottato dalla classe anche per valori particolari di tipo `double`, come `0.0`, `-0.0` e `NaN`. In particolare:
+
+```java
+e1.compareTo(e2) == 0
+```
+
+se e solo se:
+
+```java
+e1.equals(e2)
+```
+
+Questa compatibilità è importante quando gli oggetti vengono utilizzati in collezioni ordinate come `TreeSet` e `TreeMap`.
 
 ## Rappresentazione testuale
 
@@ -76,6 +148,12 @@ mvn test
 
 Per avviare un front-end si può eseguire il relativo metodo `main` dall'IDE.
 
+Per osservare direttamente il comportamento delle copie difensive si può eseguire anche il metodo `main` della classe:
+
+```text
+TestCopieDifensive
+```
+
 Il codice della logica applicativa e dei front-end usa volutamente costrutti di base. Il progetto Maven richiede tuttavia Java 8 perché JUnit 5 e il test di un'eccezione tramite espressione lambda non sono disponibili in Java 5. Questa scelta riguarda l'infrastruttura di test, non i concetti di programmazione mostrati dalle classi principali.
 
 ## Generazione della Javadoc
@@ -87,7 +165,9 @@ javadoc -d docs -sourcepath src/main/java \
   src/main/java/it/unicam/cs/asdl/slides/javaeoop/EquazioneSecondoGrado.java \
   src/main/java/it/unicam/cs/asdl/slides/javaeoop/SoluzioneEquazioneSecondoGrado.java \
   src/main/java/it/unicam/cs/asdl/slides/javaeoop/RisolutoreEquazioneDiSecondoGrado.java \
-  src/main/java/it/unicam/cs/asdl/slides/javaeoop/RisolutoreEquazioniSecondoGrado.java
+  src/main/java/it/unicam/cs/asdl/slides/javaeoop/RisolutoreEquazioniSecondoGrado.java \
+  src/main/java/it/unicam/cs/asdl/slides/javaeoop/Coefficienti.java \
+  src/main/java/it/unicam/cs/asdl/slides/javaeoop/EquazioneSecondoGradoConCoefficienti.java
 ```
 
 La Javadoc descrive il contratto pubblico delle classi: significato dei parametri, valore restituito, eccezioni e condizioni d'uso. I dettagli interni dell'algoritmo restano invece nei commenti ordinari, vicino al codice che spiegano.

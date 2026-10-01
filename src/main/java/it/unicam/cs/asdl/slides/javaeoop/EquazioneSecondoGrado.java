@@ -143,40 +143,34 @@ public class EquazioneSecondoGrado
     }
 
     /**
-     * Confronta questa equazione con un'altra secondo l'ordinamento
-     * lessicografico dei coefficienti: prima {@code a}, poi {@code b} e infine
+     * Confronta questa equazione con un'altra secondo l'ordinamento naturale
+     * lessicografico dei coefficienti: prima {@code a}, poi {@code b}, infine
      * {@code c}.
      * <p>
-     * L'esempio didattico assume coefficienti finiti e non distingue
-     * {@code 0.0} da {@code -0.0} per {@code b} e {@code c}. Fuori da questo
-     * dominio il confronto scritto con gli operatori {@code <} e {@code >} non
-     * garantisce la compatibilità con {@link #equals(Object)}.
+     * Il confronto dei coefficienti usa {@link Double#compare(double, double)}.
+     * In questo modo l'ordinamento è coerente con il criterio adottato da
+     * {@link #equals(Object)} anche per valori particolari di tipo
+     * {@code double}, come {@code 0.0}, {@code -0.0} e {@code NaN}.
+     * In particolare, {@code compareTo} restituisce zero se e solo se le due
+     * equazioni sono considerate uguali da {@code equals}.
      *
      * @param o equazione con cui effettuare il confronto
      * @return un valore negativo se questa equazione precede {@code o}, zero se
-     *         coincide con {@code o}, un valore positivo se la segue
+     *         le equazioni sono uguali, un valore positivo se questa equazione
+     *         segue {@code o}
      * @throws NullPointerException se {@code o} è {@code null}
      */
     @Override
     public int compareTo(EquazioneSecondoGrado o) {
         if (o == null)
             throw new NullPointerException("Tentativo di confrontare con null");
-        if (this.a < o.a)
-            return -1;
-        else if (this.a > o.a)
-            return 1;
-        // A parità di a, il confronto prosegue con b.
-        if (this.b < o.b)
-            return -1;
-        else if (this.b > o.b)
-            return 1;
-        // A parità di a e b, il confronto prosegue con c.
-        if (this.c < o.c)
-            return -1;
-        else if (this.c > o.c)
-            return 1;
-        // Tutti i coefficienti coincidono nel dominio assunto dall'esempio.
-        return 0;
+        int comparison = Double.compare(this.a, o.a);
+        if (comparison != 0)
+            return comparison;
+        comparison = Double.compare(this.b, o.b);
+        if (comparison != 0)
+            return comparison;
+        return Double.compare(this.c, o.c);
     }
 
     /**
