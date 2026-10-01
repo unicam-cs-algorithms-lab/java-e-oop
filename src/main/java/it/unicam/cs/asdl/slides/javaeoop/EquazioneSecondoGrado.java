@@ -103,19 +103,37 @@ public class EquazioneSecondoGrado
         return true;
     }
 
-    /*
-     * Il codice hash usa gli stessi tre campi impiegati da equals. In questo
-     * modo due equazioni uguali hanno sempre lo stesso codice hash, come
-     * richiesto dalle collezioni basate su hashing.
+    /**
+     * Restituisce un codice hash coerente con {@link #equals(Object)}.
+     * <p>
+     * Oggetti uguali secondo {@code equals} devono produrre lo stesso codice
+     * hash, requisito fondamentale per l'uso corretto nelle collezioni basate
+     * su hashing.
+     *
+     * @return il codice hash di questa equazione
      */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         long temp;
-        // Si parte dalla rappresentazione a 64 bit del valore double.
         temp = Double.doubleToLongBits(a);
-        // Lo XOR combina le due metà del long prima della conversione a int.
+        // Combina con XOR i 32 bit alti e i 32 bit bassi del long,
+        // ottenendo un valore int a cui contribuiscono tutti i 64 bit.
+        /*
+                       long temp (64 bit)
+        ┌──────────────┬──────────────┐
+        │  32 bit ALTI │ 32 bit BASSI │
+        └──────────────┴──────────────┘
+                │              │
+                └────── XOR ───┘
+                       │
+                       ▼
+                    32 bit
+                       │
+                    (int)
+         */
+        result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(b);
         result = prime * result + (int) (temp ^ (temp >>> 32));
