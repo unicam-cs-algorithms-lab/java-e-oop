@@ -19,6 +19,9 @@ package it.unicam.cs.asdl.slides.javaeoop;
  */
 public class EquazioneSecondoGradoConCoefficienti {
 
+    /* Soglia usata soltanto per stabilire se il coefficiente a è zero. */
+    private static final double EPSILON = 1.0E-15;
+
     private final Coefficienti coefficienti;
 
     /**
@@ -39,7 +42,7 @@ public class EquazioneSecondoGradoConCoefficienti {
     public EquazioneSecondoGradoConCoefficienti(Coefficienti coefficienti) {
         if (coefficienti == null)
             throw new NullPointerException("Coefficienti nulli");
-        if (coefficienti.getA() == 0)
+        if (Math.abs(coefficienti.getA()) < EPSILON)
             throw new IllegalArgumentException(
                     "Il coefficiente a deve essere diverso da zero");
 
@@ -62,18 +65,6 @@ public class EquazioneSecondoGradoConCoefficienti {
         // Copia difensiva in uscita: non rendiamo accessibile il riferimento
         // interno, ma costruiamo un nuovo oggetto con gli stessi valori.
         return new Coefficienti(this.coefficienti);
-    }
-
-    /**
-     * Calcola il delta dell'equazione.
-     *
-     * @return il valore {@code b*b - 4*a*c}
-     */
-    public double delta() {
-        double a = coefficienti.getA();
-        double b = coefficienti.getB();
-        double c = coefficienti.getC();
-        return b * b - 4 * a * c;
     }
 
     /**

@@ -4,15 +4,15 @@ package it.unicam.cs.asdl.slides.javaeoop;
  * Rappresenta i tre coefficienti {@code a}, {@code b} e {@code c} di una
  * equazione di secondo grado.
  * <p>
- * Questa classe e' volutamente mutabile: i coefficienti possono essere
- * modificati dopo la costruzione tramite i metodi setter. La mutabilita' rende
+ * Questa classe è volutamente mutabile: i coefficienti possono essere
+ * modificati dopo la costruzione tramite i metodi setter. La mutabilità rende
  * la classe adatta a mostrare un punto importante dell'incapsulamento: se un
  * oggetto conserva direttamente un riferimento a un oggetto mutabile ricevuto
  * dall'esterno, il suo stato puo' cambiare senza che venga chiamato un suo
  * metodo.
  * <p>
  * Oltre al costruttore ordinario, la classe mette a disposizione un
- * <em>copy constructor</em>, cioe' un costruttore che crea un nuovo oggetto
+ * <em>copy constructor</em>, cioè un costruttore che crea un nuovo oggetto
  * copiando lo stato di un altro oggetto {@code Coefficienti}. Il nuovo oggetto
  * contiene gli stessi valori ma occupa una zona distinta dello heap e puo'
  * quindi essere modificato indipendentemente dall'originale.
@@ -42,7 +42,7 @@ public class Coefficienti {
      * Costruisce una nuova terna copiando i valori di un'altra istanza di
      * {@code Coefficienti}.
      * <p>
-     * Il nuovo oggetto e' indipendente da quello ricevuto: i due oggetti hanno
+     * Il nuovo oggetto è indipendente da quello ricevuto: i due oggetti hanno
      * inizialmente gli stessi valori, ma modificare uno dei due non modifica
      * l'altro. Questo costruttore viene utilizzato negli esempi per realizzare
      * copie difensive.
