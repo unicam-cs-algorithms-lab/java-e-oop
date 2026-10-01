@@ -11,13 +11,15 @@ package it.unicam.cs.asdl.slides.javaeoop;
  * dall'esterno, il suo stato puo' cambiare senza che venga chiamato un suo
  * metodo.
  * <p>
- * Il metodo {@link #clone()} permette di creare una copia indipendente dei
- * coefficienti. In questo esempio la copia e' semplice perche' lo stato e'
- * formato solo da valori primitivi di tipo {@code double}.
+ * Oltre al costruttore ordinario, la classe mette a disposizione un
+ * <em>copy constructor</em>, cioe' un costruttore che crea un nuovo oggetto
+ * copiando lo stato di un altro oggetto {@code Coefficienti}. Il nuovo oggetto
+ * contiene gli stessi valori ma occupa una zona distinta dello heap e puo'
+ * quindi essere modificato indipendentemente dall'originale.
  *
  * @author Luca Tesei
  */
-public class Coefficienti implements Cloneable {
+public class Coefficienti {
 
     private double a;
     private double b;
@@ -34,6 +36,26 @@ public class Coefficienti implements Cloneable {
         this.a = a;
         this.b = b;
         this.c = c;
+    }
+
+    /**
+     * Costruisce una nuova terna copiando i valori di un'altra istanza di
+     * {@code Coefficienti}.
+     * <p>
+     * Il nuovo oggetto e' indipendente da quello ricevuto: i due oggetti hanno
+     * inizialmente gli stessi valori, ma modificare uno dei due non modifica
+     * l'altro. Questo costruttore viene utilizzato negli esempi per realizzare
+     * copie difensive.
+     *
+     * @param other coefficienti da copiare
+     * @throws NullPointerException se {@code other} e' {@code null}
+     */
+    public Coefficienti(Coefficienti other) {
+        if (other == null)
+            throw new NullPointerException("Coefficienti nulli");
+        this.a = other.a;
+        this.b = other.b;
+        this.c = other.c;
     }
 
     /**
@@ -76,21 +98,6 @@ public class Coefficienti implements Cloneable {
      */
     public void setC(double c) {
         this.c = c;
-    }
-
-    /**
-     * Crea una nuova istanza di {@code Coefficienti} con gli stessi valori di
-     * questa istanza.
-     * <p>
-     * La copia restituita e' indipendente: modificare la copia non modifica
-     * l'oggetto originale e viceversa. Questo metodo viene usato negli esempi
-     * sulle copie difensive.
-     *
-     * @return una copia indipendente di questi coefficienti
-     */
-    @Override
-    public Coefficienti clone() {
-        return new Coefficienti(this.a, this.b, this.c);
     }
 
     /**

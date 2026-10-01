@@ -23,7 +23,7 @@ public class TestCopieDifensive {
 
         /*
          * Modifichiamo l'oggetto passato al costruttore. L'equazione non cambia:
-         * il costruttore non ha conservato questo riferimento, ma una copia.
+         * il costruttore non ha conservato questo riferimento, ma ha creato una copia tramite il copy constructor.
          */
         System.out.println("\nModifico l'oggetto Coefficienti originale...");
         originali.setA(10.0);
@@ -33,7 +33,7 @@ public class TestCopieDifensive {
 
         /*
          * Ora modifichiamo l'oggetto restituito dal getter. Anche questa modifica
-         * non raggiunge lo stato interno: il getter restituisce una nuova copia.
+         * non raggiunge lo stato interno: il getter crea e restituisce una nuova copia tramite il copy constructor.
          */
         System.out.println("\nModifico l'oggetto restituito dal getter...");
         Coefficienti ottenutiDalGetter = equazione.getCoefficienti();

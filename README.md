@@ -10,8 +10,8 @@ Alcune classi aggiuntive riprendono lo stesso dominio delle equazioni di secondo
 
 Nel progetto si possono riconoscere i concetti introdotti nelle slide:
 
-- classi e oggetti come rappresentazioni di entità del dominio;
-- stato degli oggetti, incapsulamento e immutabilità;
+- classi e oggetti come rappresentazioni di entita' del dominio;
+- stato degli oggetti, incapsulamento e immutabilita';
 - metodi pubblici come API della classe;
 - separazione tra logica applicativa e front-end;
 - uso di parametri, valori di ritorno ed eccezioni per comunicare con la logica applicativa;
@@ -19,7 +19,7 @@ Nel progetto si possono riconoscere i concetti introdotti nelle slide:
 - test manuali e test automatici con JUnit 5;
 - riferimenti a oggetti, stack delle attivazioni e heap;
 - condivisione di riferimenti a oggetti mutabili e copie difensive;
-- uso di `clone` per creare copie di oggetti quando il tipo lo supporta;
+- uso di un **copy constructor** per creare un nuovo oggetto con lo stesso stato di un altro oggetto;
 - uguaglianza logica mediante `equals` e `hashCode`;
 - ordinamento naturale mediante `Comparable` e `compareTo`;
 - rappresentazione testuale degli oggetti mediante `toString`.
@@ -32,21 +32,34 @@ Il package `it.unicam.cs.asdl.slides.javaeoop` contiene le classi della logica a
 
 ### Logica applicativa
 
-- `EquazioneSecondoGrado` rappresenta un'equazione tramite i coefficienti `a`, `b` e `c`. La classe è immutabile, ridefinisce `equals`, `hashCode` e `toString` e implementa `Comparable<EquazioneSecondoGrado>`.
-- `SoluzioneEquazioneSecondoGrado` rappresenta una soluzione vuota, una soluzione doppia oppure due soluzioni distinte. Anche questa classe è immutabile.
+- `EquazioneSecondoGrado` rappresenta un'equazione tramite i coefficienti `a`, `b` e `c`. La classe e' immutabile, ridefinisce `equals`, `hashCode` e `toString` e implementa `Comparable<EquazioneSecondoGrado>`.
+- `SoluzioneEquazioneSecondoGrado` rappresenta una soluzione vuota, una soluzione doppia oppure due soluzioni distinte. Anche questa classe e' immutabile.
 - `RisolutoreEquazioneDiSecondoGrado` associa un risolutore a una sola equazione, memorizzata nel suo stato.
-- `RisolutoreEquazioniSecondoGrado` non conserva lo stato di una particolare equazione. Lo stesso oggetto può quindi risolvere più equazioni ricevute come argomento del metodo `solve`.
+- `RisolutoreEquazioniSecondoGrado` non conserva lo stato di una particolare equazione. Lo stesso oggetto puo' quindi risolvere piu' equazioni ricevute come argomento del metodo `solve`.
 
 Le classi della logica applicativa non leggono dati dall'utente e non stampano risultati. Ricevono gli input attraverso costruttori o parametri, restituiscono oggetti e segnalano gli usi non validi mediante eccezioni.
 
-### Copie difensive
+### Copie difensive e copy constructor
 
 Le classi `Coefficienti` ed `EquazioneSecondoGradoConCoefficienti` costituiscono un esempio separato, sempre basato sul dominio delle equazioni di secondo grado, utilizzato per mostrare un problema che si presenta quando lo stato di un oggetto contiene riferimenti ad altri oggetti mutabili.
 
 - `Coefficienti` rappresenta i tre coefficienti `a`, `b` e `c` mediante un oggetto mutabile.
+- `Coefficienti` mette a disposizione anche un **copy constructor**, cioe' un costruttore che riceve un altro oggetto `Coefficienti` e crea un nuovo oggetto con gli stessi valori.
 - `EquazioneSecondoGradoConCoefficienti` memorizza nel proprio stato un oggetto `Coefficienti`, ma protegge il proprio stato mediante **copie difensive**.
 
-Se un costruttore memorizzasse direttamente il riferimento ricevuto:
+Il copy constructor di `Coefficienti` ha la forma:
+
+```java
+public Coefficienti(Coefficienti other) {
+    this.a = other.a;
+    this.b = other.b;
+    this.c = other.c;
+}
+```
+
+Il nuovo oggetto contiene gli stessi valori di `other`, ma e' un oggetto distinto nello heap. Le due istanze possono quindi essere modificate indipendentemente.
+
+Se il costruttore di `EquazioneSecondoGradoConCoefficienti` memorizzasse direttamente il riferimento ricevuto:
 
 ```java
 this.coefficienti = coefficienti;
@@ -57,7 +70,7 @@ il chiamante conserverebbe un riferimento allo stesso oggetto e potrebbe quindi 
 Per evitare questa condivisione, il costruttore crea una copia:
 
 ```java
-this.coefficienti = coefficienti.clone();
+this.coefficienti = new Coefficienti(coefficienti);
 ```
 
 Lo stesso problema si presenta nella direzione opposta. Un getter che restituisse direttamente:
@@ -69,16 +82,16 @@ return this.coefficienti;
 renderebbe accessibile dall'esterno l'oggetto mutabile che costituisce lo stato interno dell'equazione. Anche il getter restituisce quindi una copia:
 
 ```java
-return this.coefficienti.clone();
+return new Coefficienti(this.coefficienti);
 ```
 
 In questo modo l'oggetto ricevuto dal costruttore, quello memorizzato internamente e quelli restituiti dai getter possono contenere gli stessi valori, ma sono **oggetti distinti nell'heap**.
 
 La classe `TestCopieDifensive` contiene un metodo `main` che permette di osservare direttamente questo comportamento: modificare l'oggetto `Coefficienti` originale oppure un oggetto restituito dal getter non modifica i coefficienti memorizzati nell'equazione.
 
-La classe `EquazioneSecondoGradoConCoefficientiTest`, nella cartella `src/test`, verifica lo stesso comportamento mediante test JUnit 5, mostrando anche l'uso di `assertNotSame` per distinguere l'uguaglianza dei dati dall'identità degli oggetti.
+La classe `EquazioneSecondoGradoConCoefficientiTest`, nella cartella `src/test`, verifica lo stesso comportamento mediante test JUnit 5. I test mostrano anche l'uso di `assertNotSame` per distinguere l'identita' degli oggetti dall'uguaglianza dei dati e verificano direttamente il comportamento del copy constructor.
 
-L'esempio introduce `clone` soltanto come meccanismo utilizzato da `Coefficienti` per produrre una nuova istanza contenente gli stessi valori. Il punto centrale dell'esempio non è il meccanismo generale di clonazione degli oggetti Java, ma il principio secondo cui la condivisione di riferimenti a oggetti mutabili può compromettere l'incapsulamento e può quindi rendere necessarie copie difensive.
+Il punto centrale dell'esempio non e' un particolare meccanismo di clonazione, ma il principio secondo cui la condivisione di riferimenti a oggetti mutabili puo' compromettere l'incapsulamento. Il copy constructor rende esplicita la creazione di una nuova istanza e permette di realizzare in modo semplice le copie difensive necessarie in questo esempio.
 
 ### Front-end e test
 
@@ -88,7 +101,7 @@ L'esempio introduce `clone` soltanto come meccanismo utilizzato da `Coefficienti
 - `TestCopieDifensive` permette di osservare tramite un metodo `main` il comportamento delle copie difensive.
 - `EquazioneSecondoGradoTest`, `RisolutoreEquazioniSecondoGradoTest` ed `EquazioneSecondoGradoConCoefficientiTest`, nella cartella `src/test`, mostrano test automatici con JUnit 5.
 
-La presenza di due front-end rende visibile la separazione tra presentazione e logica applicativa: l'interazione con l'utente può cambiare senza modificare le classi che rappresentano e risolvono le equazioni.
+La presenza di due front-end rende visibile la separazione tra presentazione e logica applicativa: l'interazione con l'utente puo' cambiare senza modificare le classi che rappresentano e risolvono le equazioni.
 
 ## Stato, riferimenti e memoria
 
@@ -102,11 +115,11 @@ Analogamente, un'assegnazione come:
 Coefficienti c2 = c1;
 ```
 
-non crea un secondo oggetto `Coefficienti`: `c1` e `c2` contengono due copie dello stesso riferimento e indicano quindi lo stesso oggetto nell'heap. Una modifica effettuata attraverso uno dei due riferimenti è osservabile anche attraverso l'altro.
+non crea un secondo oggetto `Coefficienti`: `c1` e `c2` contengono due copie dello stesso riferimento e indicano quindi lo stesso oggetto nell'heap. Una modifica effettuata attraverso uno dei due riferimenti e' osservabile anche attraverso l'altro.
 
-Questa proprietà è particolarmente importante per l'incapsulamento. Dichiarare un campo `private` impedisce di accedere direttamente alla variabile istanza, ma può non essere sufficiente se attraverso costruttori o getter vengono condivisi riferimenti agli oggetti mutabili che costituiscono lo stato interno.
+Questa proprieta' e' particolarmente importante per l'incapsulamento. Dichiarare un campo `private` impedisce di accedere direttamente alla variabile istanza, ma puo' non essere sufficiente se attraverso costruttori o getter vengono condivisi riferimenti agli oggetti mutabili che costituiscono lo stato interno.
 
-Le copie difensive mostrate da `EquazioneSecondoGradoConCoefficienti` impediscono questa condivisione.
+Le copie difensive mostrate da `EquazioneSecondoGradoConCoefficienti` impediscono questa condivisione. Il copy constructor di `Coefficienti` rende esplicita la creazione di un nuovo oggetto con lo stesso stato dell'oggetto ricevuto.
 
 I coefficienti della classe originale `EquazioneSecondoGrado` sono invece valori primitivi `double`, dichiarati `private` e `final`; tutti i campi di `SoluzioneEquazioneSecondoGrado` sono `final` e nessuno fa parte dell'API pubblica. Dopo il costruttore lo stato non cambia e i metodi pubblici consentono di osservarlo senza renderlo modificabile.
 
@@ -130,7 +143,7 @@ se e solo se:
 e1.equals(e2)
 ```
 
-Questa compatibilità è importante quando gli oggetti vengono utilizzati in collezioni ordinate come `TreeSet` e `TreeMap`.
+Questa compatibilita' e' importante quando gli oggetti vengono utilizzati in collezioni ordinate come `TreeSet` e `TreeMap`.
 
 ## Rappresentazione testuale
 
@@ -146,19 +159,19 @@ Il progetto usa Maven:
 mvn test
 ```
 
-Per avviare un front-end si può eseguire il relativo metodo `main` dall'IDE.
+Per avviare un front-end si puo' eseguire il relativo metodo `main` dall'IDE.
 
-Per osservare direttamente il comportamento delle copie difensive si può eseguire anche il metodo `main` della classe:
+Per osservare direttamente il comportamento delle copie difensive si puo' eseguire anche il metodo `main` della classe:
 
 ```text
 TestCopieDifensive
 ```
 
-Il codice della logica applicativa e dei front-end usa volutamente costrutti di base. Il progetto Maven richiede tuttavia Java 8 perché JUnit 5 e il test di un'eccezione tramite espressione lambda non sono disponibili in Java 5. Questa scelta riguarda l'infrastruttura di test, non i concetti di programmazione mostrati dalle classi principali.
+Il codice della logica applicativa e dei front-end usa volutamente costrutti di base. Il progetto Maven richiede tuttavia Java 8 perche' JUnit 5 e il test di un'eccezione tramite espressione lambda non sono disponibili in Java 5. Questa scelta riguarda l'infrastruttura di test, non i concetti di programmazione mostrati dalle classi principali.
 
 ## Generazione della Javadoc
 
-Dalla radice del progetto si può generare la documentazione delle classi della logica applicativa con un comando analogo al seguente:
+Dalla radice del progetto si puo' generare la documentazione delle classi della logica applicativa con un comando analogo al seguente:
 
 ```text
 javadoc -d docs -sourcepath src/main/java \

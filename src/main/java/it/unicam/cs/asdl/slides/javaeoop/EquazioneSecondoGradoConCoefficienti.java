@@ -8,7 +8,8 @@ package it.unicam.cs.asdl.slides.javaeoop;
  * la dichiarazione {@code private} dei campi. Il campo {@code coefficienti} e'
  * privato, ma l'oggetto a cui fa riferimento e' mutabile. Per evitare che il
  * chiamante possa modificare indirettamente lo stato dell'equazione, il
- * costruttore e il getter usano copie difensive.
+ * costruttore e il getter usano copie difensive create tramite il copy
+ * constructor di {@link Coefficienti}.
  * <p>
  * In questo modo lo stato dell'equazione puo' cambiare solo attraverso i metodi
  * pubblici della classe stessa, come previsto dall'idea di oggetto come entita'
@@ -24,10 +25,10 @@ public class EquazioneSecondoGradoConCoefficienti {
      * Costruisce una equazione di secondo grado a partire da una terna di
      * coefficienti.
      * <p>
-     * Il parametro non viene memorizzato direttamente. Viene invece clonata la
-     * terna ricevuta, in modo che eventuali modifiche successive all'oggetto
-     * passato dal chiamante non possano alterare lo stato interno di questa
-     * equazione.
+     * Il parametro non viene memorizzato direttamente. Il copy constructor di
+     * {@link Coefficienti} crea invece un nuovo oggetto con gli stessi valori,
+     * in modo che eventuali modifiche successive all'oggetto passato dal
+     * chiamante non possano alterare lo stato interno di questa equazione.
      *
      * @param coefficienti coefficienti dell'equazione
      * @throws NullPointerException     se {@code coefficienti} e' {@code null}
@@ -42,10 +43,10 @@ public class EquazioneSecondoGradoConCoefficienti {
             throw new IllegalArgumentException(
                     "Il coefficiente a deve essere diverso da zero");
 
-        // Copia difensiva in ingresso: non conserviamo il riferimento ricevuto.
-        // Se il chiamante modifica il suo oggetto Coefficienti, questa equazione
-        // resta invariata perche' possiede una copia distinta nello heap.
-        this.coefficienti = coefficienti.clone();
+        // Copia difensiva in ingresso: il copy constructor crea un nuovo
+        // oggetto Coefficienti. Il chiamante conserva il proprio oggetto,
+        // mentre l'equazione ne possiede uno distinto nello heap.
+        this.coefficienti = new Coefficienti(coefficienti);
     }
 
     /**
@@ -58,8 +59,9 @@ public class EquazioneSecondoGradoConCoefficienti {
      * @return una copia dei coefficienti di questa equazione
      */
     public Coefficienti getCoefficienti() {
-        // Copia difensiva in uscita: il riferimento interno rimane privato.
-        return this.coefficienti.clone();
+        // Copia difensiva in uscita: non rendiamo accessibile il riferimento
+        // interno, ma costruiamo un nuovo oggetto con gli stessi valori.
+        return new Coefficienti(this.coefficienti);
     }
 
     /**
